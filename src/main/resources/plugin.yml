@@ -1,0 +1,8 @@
+name: PinPassword
+version: '1.1'
+main: ru.vanamxd.pinpassword.PinPlugin
+api-version: '1.16'
+author: vanamxd
+softdepend: [PlaceholderAPI]
+commands:
+  pin:
