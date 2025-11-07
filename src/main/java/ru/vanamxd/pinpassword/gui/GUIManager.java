@@ -237,6 +237,14 @@ public class GUIManager implements Listener {
         }
     }
 
+    public void setAuthenticated(UUID uuid, boolean value) {
+        if (value) {
+            auth.add(uuid);
+        } else {
+            auth.remove(uuid);
+        }
+    }
+
     public boolean isAuthenticated(UUID uuid) {
         return auth.contains(uuid);
     }

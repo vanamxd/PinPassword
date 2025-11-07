@@ -6,3 +6,6 @@ author: vanamxd
 softdepend: [PlaceholderAPI]
 commands:
   pin:
+permissions:
+  pinpassword.required:
+    default: false

@@ -1,6 +1,7 @@
 pin:
   pinLength: 4
   maxAttempts: 3
+
   messages:
     pincreated: "&aПин-код создан."
     pinexists: "&cУ вас уже создан пин-код!"
@@ -15,11 +16,14 @@ pin:
     onlyconsole: "&cКоманда только для консоли!"
     notplayer: "&cИгрок не найден!"
     notcommand: "&cНеправильная подкоманда!"
+    youblock: "&aВы прописали /pin lock, введите ваш пин-код!"
     pincommands:
       - "&a/pin create - создать пин-код"
       - "&a/pin change - сменить пин-код"
+      - "&a/pin lock - заблокировать себя"
       - "&a/pin delete <ник> - удалить пин-код игрока (только для консоли)"
     nopinconsole: "&cУ этого игрока нет пин-кода!"
+    pinblacklist: "&cДанный пин-код находится в небезопасном списке пин-кодов!"
   gui:
     namehead: "&#FF0000%number%"
   heads:
@@ -36,14 +40,12 @@ pin:
 storage:
   type: "sqlite" # mysql, sqlite, mariadb
 
-
   mysql:
     host: "ip"
     port: 3306
     database: "database"
     user: "root"
     password: "password"
-
 
   sqlite: # локальная датабаза, создается в папке PinPassword
     file: "pinpassword.db"

@@ -22,6 +22,16 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
+        UUID uuid = p.getUniqueId();
+
+        if (p.hasPermission("pinpassword.required")) {
+            if (!plugin.getPinManager().hasPin(uuid)) {
+                plugin.getGuiManager().openCreateMenu(p);
+                return;
+            }
+        }
+
+
         if (plugin.getPinManager().hasPin(p.getUniqueId())) {
             plugin.getGuiManager().openEnterMenu(p);
         }

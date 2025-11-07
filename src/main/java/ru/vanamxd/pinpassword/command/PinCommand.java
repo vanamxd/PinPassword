@@ -1,6 +1,7 @@
 package ru.vanamxd.pinpassword.command;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import ru.vanamxd.pinpassword.gui.GUIManager;
 import ru.vanamxd.pinpassword.utils.HexColor;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PinCommand implements CommandExecutor {
     private final PinPlugin plugin;
@@ -43,6 +45,29 @@ public class PinCommand implements CommandExecutor {
             return true;
         }
 
+        if (sub.equals("lock")) {
+            if (!(sender instanceof Player)) {
+                return true;
+            }
+            Player player = (Player) sender;
+            UUID uuid = player.getUniqueId();
+
+            if (!plugin.getGuiManager().isAuthenticated(uuid)) {
+                return true;
+            }
+
+            if (!plugin.getPinManager().hasPin(uuid)) {
+                player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopin")));
+                return true;
+            }
+
+            plugin.getGuiManager().setAuthenticated(uuid, false);
+            plugin.getGuiManager().openEnterMenu(player);
+            player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.youblock")));
+            return true;
+        }
+
+
         if (sub.equals("delete")) {
             if (args.length < 2) {
                 sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.usedelete")));
@@ -53,7 +78,7 @@ public class PinCommand implements CommandExecutor {
                 return true;
             }
             String targetName = args[1];
-            Player target = Bukkit.getPlayerExact(targetName);
+            OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
             if (target == null) {
                 sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.notplayer")));
                 return true;
