@@ -31,7 +31,7 @@ public class PinManager {
         loadPins();
     }
 
-    private void initsql() {
+    private void initsql() { 
         try {
             File dbFile = new File(plugin.getDataFolder(), plugin.getConfig().getString("storage.sqlite.file", "pins.db"));
             if (!dbFile.exists()) dbFile.createNewFile();
@@ -42,7 +42,7 @@ public class PinManager {
         }
     }
 
-    private void initmysql() {
+    private void initmysql() { // TODO:
         try {
             String host = plugin.getConfig().getString("storage.mysql.host");
             int port = plugin.getConfig().getInt("storage.mysql.port");
@@ -57,7 +57,7 @@ public class PinManager {
         }
     }
 
-    private void createTable() {
+    private void createTable() { // TODO:
         try (Statement st = connection.createStatement()) {
             st.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS pins (
@@ -69,7 +69,7 @@ public class PinManager {
             e.printStackTrace();
         }
     }
-    private void loadPins() {
+    private void loadPins() { // TODO:
         number.clear();
 
         switch (storagetype) {
