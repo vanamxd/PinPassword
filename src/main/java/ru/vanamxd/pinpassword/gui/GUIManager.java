@@ -1,7 +1,18 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package ru.vanamxd.pinpassword.gui;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -11,8 +22,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -20,68 +31,88 @@ import org.bukkit.persistence.PersistentDataType;
 import ru.vanamxd.pinpassword.PinPlugin;
 import ru.vanamxd.pinpassword.utils.HexColor;
 
-import java.util.*;
-
 public class GUIManager implements Listener {
     private final PinPlugin plugin;
-    public final Map<UUID, Inventory> openinvs = new HashMap<>();
-    public final Map<UUID, StringBuilder> entries = new HashMap<>();
-    public final Map<UUID, Boolean> createmode = new HashMap<>();
-    public final Map<UUID, Boolean> changmode = new HashMap<>();
-    private final Set<UUID> auth = new HashSet<>();
-    private final Map<UUID, Integer> attempts = new HashMap<>();
+    public final Map<UUID, Inventory> openinvs = new HashMap();
+    public final Map<UUID, StringBuilder> entries = new HashMap();
+    public final Map<UUID, Boolean> createmode = new HashMap();
+    public final Map<UUID, Boolean> changmode = new HashMap();
+    private final Set<UUID> auth = new HashSet();
+    public final Map<UUID, Integer> attempts = new HashMap();
     private final int pinlength;
-    private final int maxattempts;
-    public Map<UUID, Boolean> closebyplug = new HashMap<>();
+    public final int maxattempts;
+    public Map<UUID, Boolean> closebyplug = new HashMap();
     private final NamespacedKey key;
+    private final ItemStack[] h = new ItemStack[9];
+    public final Map<Integer, Integer> slots = Map.of(
+            0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9
+    );
+
 
     public GUIManager(PinPlugin plugin) {
         this.plugin = plugin;
-        pinlength = plugin.getConfig().getInt("pin.pinLength");
-        maxattempts = plugin.getConfig().getInt("pin.maxAttempts");
+        this.pinlength = plugin.getConfig().getInt("pin.pinLength");
+        this.maxattempts = plugin.getConfig().getInt("pin.maxAttempts");
         this.key = new NamespacedKey(plugin, "pin_digit");
+        initHeads();
     }
 
     public void openCreateMenu(Player p) {
         UUID uuid = p.getUniqueId();
-        if (plugin.getPinManager().hasPin(uuid)) {
-            p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.pinexists")));
-            return;
+        if (this.plugin.getPinManager().hasPin(uuid)) {
+            p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinexists")));
+        } else {
+            this.entries.putIfAbsent(p.getUniqueId(), new StringBuilder());
+            this.createmode.put(p.getUniqueId(), true);
+            this.openMenuFor(p);
         }
-        entries.putIfAbsent(p.getUniqueId(), new StringBuilder());
-        createmode.put(p.getUniqueId(), true);
-        openMenuFor(p);
     }
-
     public void openEnterMenu(Player p) {
         UUID uuid = p.getUniqueId();
-        entries.putIfAbsent(p.getUniqueId(), new StringBuilder());
-        createmode.put(p.getUniqueId(), false);
+        this.entries.putIfAbsent(p.getUniqueId(), new StringBuilder());
+        this.createmode.put(p.getUniqueId(), false);
         attempts.putIfAbsent(uuid, attempts.getOrDefault(uuid, plugin.getConfig().getInt("pin.maxAttempts")));
-        openMenuFor(p);
+        this.openMenuFor(p);
     }
 
     public void openChangeMenu(Player p) {
         UUID uuid = p.getUniqueId();
-        if (!plugin.getPinManager().hasPin(uuid)) {
-            p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopin")));
-            return;
+        if (!this.plugin.getPinManager().hasPin(uuid)) {
+            p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.nopin")));
+        } else {
+            this.entries.put(uuid, new StringBuilder());
+            this.createmode.put(uuid, false);
+            this.changmode.put(uuid, true);
+            this.openMenuFor(p);
         }
-        entries.put(uuid, new StringBuilder());
-        createmode.put(uuid, false);
-        changmode.put(uuid, true);
-        openMenuFor(p);
+    }
+
+    private void initHeads() {
+        for (int i = 1; i <= 9; i++) {
+            String base64 = plugin.getConfig().getString("pin.heads." + i);
+            ItemStack head = createCustomHead(base64);
+            ItemMeta meta = head.getItemMeta();
+            if (meta != null) {
+                String name = HexColor.colorize(
+                        plugin.getConfig().getString("pin.gui.namehead", String.valueOf(i))
+                                .replace("%number%", String.valueOf(i))
+                );
+                meta.setDisplayName(name);
+                meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, i);
+                head.setItemMeta(meta);
+            }
+            h[i-1] = head;
+        }
     }
 
     private ItemStack createCustomHead(String base64) {
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
         if (skullMeta != null) {
             try {
-                GameProfile profile =
-                        new GameProfile(UUID.randomUUID(), null);
+                GameProfile profile = new GameProfile(UUID.randomUUID(), (String)null);
                 profile.getProperties().put("textures", new Property("textures", base64));
-                java.lang.reflect.Field profileField = skullMeta.getClass().getDeclaredField("profile");
+                Field profileField = skullMeta.getClass().getDeclaredField("profile");
                 profileField.setAccessible(true);
                 profileField.set(skullMeta, profile);
                 skull.setItemMeta(skullMeta);
@@ -89,163 +120,148 @@ public class GUIManager implements Listener {
                 e.printStackTrace();
             }
         }
+
         return skull;
     }
 
     private void openMenuFor(Player p) {
         UUID uuid = p.getUniqueId();
-        StringBuilder sb = entries.computeIfAbsent(uuid, k -> new StringBuilder());
-        String title = buildTitle(sb);
-
+        StringBuilder sb = this.entries.computeIfAbsent(uuid, (k) -> new StringBuilder());
+        String title = this.buildTitle(sb);
         Inventory inv = Bukkit.createInventory(null, InventoryType.DISPENSER, title);
 
-        for (int i = 1; i <= 9; i++) {
-            String base64 = plugin.getConfig().getString("pin.heads." + i);
-            ItemStack head = createCustomHead(base64);
-            String name = plugin.getConfig().getString("pin.gui.namehead");
-            if (name != null) {
-                name = HexColor.colorize(name.replace("%number%", String.valueOf(i)));
-            } else {
-                name = String.valueOf(i);
-            }
-            ItemMeta meta = head.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName(name);
-                meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, i);
-                head.setItemMeta(meta);
-            }
-            head.setItemMeta(meta);
-            inv.setItem(i - 1, head);
+        for (int i = 0; i < 9; i++) {
+            inv.setItem(i, h[i].clone());
         }
 
-        closebyplug.put(uuid, true);
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        this.closebyplug.put(uuid, true);
+
+        Bukkit.getScheduler().runTask(this.plugin, () -> {
             p.openInventory(inv);
-            openinvs.put(uuid, inv);
-            closebyplug.remove(uuid);
+            this.openinvs.put(uuid, inv);
+            this.closebyplug.remove(uuid);
         });
     }
 
     private String buildTitle(StringBuilder sb) {
         StringBuilder disp = new StringBuilder();
-        for (int i = 0; i < pinlength; i++) {
-            if (i < sb.length()) disp.append(sb.charAt(i));
-            else disp.append("_");
+
+        for(int i = 0; i < this.pinlength; ++i) {
+            if (i < sb.length()) {
+                disp.append(sb.charAt(i));
+            } else {
+                disp.append("_");
+            }
         }
+
         return disp.toString();
     }
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
-        if (!(e.getWhoClicked() instanceof Player)) return;
-        Player p = (Player) e.getWhoClicked();
-        UUID uuid = p.getUniqueId();
+        if (e.getWhoClicked() instanceof Player) {
+            Player p = (Player)e.getWhoClicked();
+            UUID uuid = p.getUniqueId();
+            Inventory top = this.openinvs.get(uuid);
+            if (top != null) {
+                if (e.getClickedInventory() != null && e.getClickedInventory().equals(top)) {
+                    e.setCancelled(true);
+                    int slot = e.getSlot();
+                    if (slot >= 0 && slot <= 8) {
+                        ItemStack clicked = top.getItem(slot);
+                        if (clicked != null && clicked.getItemMeta() != null) {
+                            Integer digit = slots.get(slot);
+                            if (digit != null) {
+                                StringBuilder sb = this.entries.computeIfAbsent(uuid, (k) -> new StringBuilder());
+                                if (sb.length() < this.pinlength) {
+                                    sb.append(digit);
+                                    boolean isCreate = this.createmode.getOrDefault(uuid, false);
+                                    boolean isChange = this.changmode.getOrDefault(uuid, false);
+                                    if (sb.length() < this.pinlength) {
+                                        this.openMenuFor(p);
+                                    } else {
+                                        String pin = sb.toString();
+                                        this.closebyplug.put(uuid, true);
+                                        p.closeInventory();
+                                        this.openinvs.remove(uuid);
+                                        if (isCreate) {
+                                            this.plugin.getPinManager().savePin(uuid, pin);
+                                            this.auth.add(uuid);
+                                            p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pincreated")));
+                                            this.entries.remove(uuid);
+                                            this.createmode.remove(uuid);
+                                        } else if (isChange) {
+                                            this.plugin.getPinManager().savePin(uuid, pin);
+                                            p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinchanged")));
+                                            this.entries.remove(uuid);
+                                            this.changmode.remove(uuid);
+                                        } else {
+                                            boolean ok = this.plugin.getPinManager().checkPin(uuid, pin);
+                                            if (ok) {
+                                                this.auth.add(uuid);
+                                                p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pincorrect")));
+                                                this.entries.remove(uuid);
+                                                this.createmode.remove(uuid);
+                                            } else {
+                                                p.sendMessage(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinincorrect")));
+                                                this.entries.put(uuid, new StringBuilder());
+                                                int remaining = this.attempts.getOrDefault(uuid, this.maxattempts) - 1;
+                                                this.attempts.put(uuid, remaining);
+                                                if (remaining <= 0) {
+                                                    String msg = this.plugin.getConfig().getString("pin.messages.pinkickattempts");
+                                                    if (msg != null) {
+                                                        msg = HexColor.colorize(msg.replace("%attempts%", String.valueOf(this.maxattempts)));
+                                                    }
+                                                    p.kickPlayer(msg);
+                                                    this.openinvs.remove(uuid);
+                                                    this.entries.remove(uuid);
+                                                    this.createmode.remove(uuid);
+                                                    return;
+                                                }
+                                                Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+                                                    this.createmode.put(uuid, false);
+                                                    this.openEnterMenu(p);
+                                                }, 1L);
+                                            }
+                                        }
 
-        Inventory top = openinvs.get(uuid);
-        if (top == null) return;
-
-        if (e.getClickedInventory() == null || !e.getClickedInventory().equals(top)) {
-            e.setCancelled(true);
-            return;
-        }
-
-        e.setCancelled(true);
-
-        int slot = e.getSlot();
-        if (slot < 0 || slot > 8) return;
-
-        ItemStack clicked = top.getItem(slot);
-        if (clicked == null || clicked.getItemMeta() == null) return;
-
-        ItemMeta meta = clicked.getItemMeta();
-        Integer digit = meta.getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
-        if (digit == null) return;
-        StringBuilder sb = entries.computeIfAbsent(uuid, k -> new StringBuilder());
-        if (sb.length() >= pinlength) return;
-
-        sb.append(digit);
-
-        boolean isCreate = createmode.getOrDefault(uuid, false);
-        boolean isChange = changmode.getOrDefault(uuid, false);
-
-        if (sb.length() < pinlength) {
-            openMenuFor(p);
-            return;
-        }
-
-        String pin = sb.toString();
-        closebyplug.put(uuid, true);
-        p.closeInventory();
-        openinvs.remove(uuid);
-
-        if (isCreate) {
-            plugin.getPinManager().savePin(uuid, pin);
-            auth.add(uuid);
-            p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.pincreated")));
-            entries.remove(uuid);
-            createmode.remove(uuid);
-        } else if (isChange) {
-            plugin.getPinManager().savePin(uuid, pin);
-            p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.pinchanged")));
-            entries.remove(uuid);
-            changmode.remove(uuid);
-        } else {
-            boolean ok = plugin.getPinManager().checkPin(uuid, pin);
-            if (ok) {
-                auth.add(uuid);
-                p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.pincorrect")));
-                entries.remove(uuid);
-                createmode.remove(uuid);
-            } else {
-                p.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.pinincorrect")));
-                entries.put(uuid, new StringBuilder());
-                int remaining = attempts.getOrDefault(uuid, maxattempts) - 1;
-                attempts.put(uuid, remaining);
-                if (remaining <= 0) {
-                    String msg = plugin.getConfig().getString("pin.messages.pinkickattempts");
-                    if (msg != null) {
-                        msg = HexColor.colorize(msg
-                                .replace("%attempts%", String.valueOf(maxattempts)));
+                                    }
+                                }
+                            }
+                        }
                     }
-                    p.sendMessage(msg);
-                    openinvs.remove(uuid);
-                    entries.remove(uuid);
-                    createmode.remove(uuid);
-                    return;
+                } else {
+                    e.setCancelled(true);
                 }
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    createmode.put(uuid, false);
-                    openEnterMenu(p);
-                }, 1L);
             }
         }
     }
+
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
-        Player p = (Player) e.getPlayer();
+        Player p = (Player)e.getPlayer();
         UUID uuid = p.getUniqueId();
-        openinvs.remove(uuid);
-
-        if (!closebyplug.containsKey(uuid)) {
-            if (!isAuthenticated(uuid) && plugin.getPinManager().hasPin(uuid)) {
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    p.kickPlayer(HexColor.colorize(plugin.getConfig().getString("pin.messages.pinkick")));
-                });
+        this.openinvs.remove(uuid);
+        if (!this.closebyplug.containsKey(uuid)) {
+            if (!this.isAuthenticated(uuid) && this.plugin.getPinManager().hasPin(uuid)) {
+                Bukkit.getScheduler().runTask(this.plugin, () -> p.kickPlayer(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinkick"))));
             }
         } else {
-            closebyplug.remove(uuid);
+            this.closebyplug.remove(uuid);
         }
+
     }
 
     public void setAuthenticated(UUID uuid, boolean value) {
         if (value) {
-            auth.add(uuid);
+            this.auth.add(uuid);
         } else {
-            auth.remove(uuid);
+            this.auth.remove(uuid);
         }
+
     }
 
     public boolean isAuthenticated(UUID uuid) {
-        return auth.contains(uuid);
+        return this.auth.contains(uuid);
     }
 }

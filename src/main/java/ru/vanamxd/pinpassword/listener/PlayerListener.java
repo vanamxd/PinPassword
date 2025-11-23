@@ -30,9 +30,8 @@ public class PlayerListener implements Listener {
                 return;
             }
         }
-
-
         if (plugin.getPinManager().hasPin(p.getUniqueId())) {
+            plugin.getGuiManager().attempts.put(uuid, plugin.getGuiManager().maxattempts);
             plugin.getGuiManager().openEnterMenu(p);
         }
     }
