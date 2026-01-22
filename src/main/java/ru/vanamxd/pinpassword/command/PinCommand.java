@@ -45,6 +45,14 @@ public class PinCommand implements CommandExecutor {
             return true;
         }
 
+        if (sub.equals("help")) {
+            List<String> commands = plugin.getConfig().getStringList("pin.messages.pincommands");
+            for (String line : commands) {
+                sender.sendMessage(HexColor.colorize(line));
+            }
+                return true;
+        }
+
         if (sub.equals("lock")) {
             if (!(sender instanceof Player)) {
                 return true;

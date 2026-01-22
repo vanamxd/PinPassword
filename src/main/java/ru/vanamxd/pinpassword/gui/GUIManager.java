@@ -1,18 +1,7 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 package ru.vanamxd.pinpassword.gui;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,16 +9,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import ru.vanamxd.pinpassword.PinPlugin;
 import ru.vanamxd.pinpassword.utils.HexColor;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class GUIManager implements Listener {
     private final PinPlugin plugin;
@@ -235,21 +225,6 @@ public class GUIManager implements Listener {
                 }
             }
         }
-    }
-
-    @EventHandler
-    public void onClose(InventoryCloseEvent e) {
-        Player p = (Player)e.getPlayer();
-        UUID uuid = p.getUniqueId();
-        this.openinvs.remove(uuid);
-        if (!this.closebyplug.containsKey(uuid)) {
-            if (!this.isAuthenticated(uuid) && this.plugin.getPinManager().hasPin(uuid)) {
-                Bukkit.getScheduler().runTask(this.plugin, () -> p.kickPlayer(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinkick"))));
-            }
-        } else {
-            this.closebyplug.remove(uuid);
-        }
-
     }
 
     public void setAuthenticated(UUID uuid, boolean value) {

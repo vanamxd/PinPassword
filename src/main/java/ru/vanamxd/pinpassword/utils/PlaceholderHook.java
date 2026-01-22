@@ -29,7 +29,7 @@ public class PlaceholderHook extends PlaceholderExpansion {
 
     @Override
     public String getVersion() {
-        return plugin.getDescription().getVersion();
+        return "1.3";
     }
 
     @Override
@@ -39,7 +39,10 @@ public class PlaceholderHook extends PlaceholderExpansion {
         switch (identifier.toLowerCase()) {
             case "havepin":
                 return plugin.getPinManager().hasPin(player.getUniqueId()) ? "yes" : "no";
+            case "auth":
+                return plugin.getGuiManager().isAuthenticated(player.getUniqueId()) ? "yes" : "no";
         }
+
 
         return null;
     }

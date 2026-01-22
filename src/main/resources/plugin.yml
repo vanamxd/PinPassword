@@ -1,10 +1,11 @@
 name: PinPassword
-version: '1.2-fix'
+version: '1.3'
 main: ru.vanamxd.pinpassword.PinPlugin
 api-version: '1.16'
 author: vanamxd
 softdepend:
   - PlaceholderAPI
+  - AuthMe
 commands:
   pin:
 permissions:

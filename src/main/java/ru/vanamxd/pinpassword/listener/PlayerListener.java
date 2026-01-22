@@ -1,12 +1,14 @@
 package ru.vanamxd.pinpassword.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.entity.Player;
 import ru.vanamxd.pinpassword.PinPlugin;
 import ru.vanamxd.pinpassword.gui.GUIManager;
+import ru.vanamxd.pinpassword.utils.HexColor;
 
 import java.util.UUID;
 
@@ -23,6 +25,8 @@ public class PlayerListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         UUID uuid = p.getUniqueId();
+
+        if (Bukkit.getPluginManager().getPlugin("AuthMe") != null) return;
 
         if (p.hasPermission("pinpassword.required")) {
             if (!plugin.getPinManager().hasPin(uuid)) {
@@ -82,6 +86,21 @@ public class PlayerListener implements Listener {
                 plugin.getPinManager().hasPin(p.getUniqueId())) {
             e.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent e) {
+        Player p = (Player)e.getPlayer();
+        UUID uuid = p.getUniqueId();
+        guiManager.openinvs.remove(uuid);
+        if (!guiManager.closebyplug.containsKey(uuid)) {
+            if (!guiManager.isAuthenticated(uuid) && this.plugin.getPinManager().hasPin(uuid)) {
+                Bukkit.getScheduler().runTask(this.plugin, () -> p.kickPlayer(HexColor.colorize(this.plugin.getConfig().getString("pin.messages.pinkick"))));
+            }
+        } else {
+            guiManager.closebyplug.remove(uuid);
+        }
+
     }
 
     @EventHandler
