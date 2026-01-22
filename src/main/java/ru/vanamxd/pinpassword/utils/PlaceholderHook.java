@@ -39,7 +39,7 @@ public class PlaceholderHook extends PlaceholderExpansion {
         switch (identifier.toLowerCase()) {
             case "havepin":
                 return plugin.getPinManager().hasPin(player.getUniqueId()) ? "yes" : "no";
-            case "auth":
+            case "auth": // authme
                 return plugin.getGuiManager().isAuthenticated(player.getUniqueId()) ? "yes" : "no";
         }
 

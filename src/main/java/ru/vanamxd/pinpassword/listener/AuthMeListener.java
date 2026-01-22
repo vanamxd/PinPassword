@@ -17,7 +17,7 @@ public class AuthMeListener implements Listener {
     }
 
     @EventHandler
-    public void onAuthMeLogin(LoginEvent e) {
+    public void onAuthMeLogin(LoginEvent e) { // for AuthMe
         Player p = e.getPlayer();
         UUID uuid = p.getUniqueId();
 

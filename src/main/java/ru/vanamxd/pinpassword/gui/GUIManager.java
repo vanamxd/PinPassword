@@ -235,7 +235,7 @@ public class GUIManager implements Listener {
         }
 
     }
-
+    // убран onClose в PlayerListner
     public boolean isAuthenticated(UUID uuid) {
         return this.auth.contains(uuid);
     }

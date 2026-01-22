@@ -88,7 +88,7 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler // перенес из GUIManager
     public void onClose(InventoryCloseEvent e) {
         Player p = (Player)e.getPlayer();
         UUID uuid = p.getUniqueId();

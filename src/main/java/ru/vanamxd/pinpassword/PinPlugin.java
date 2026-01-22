@@ -31,7 +31,7 @@ public class PinPlugin extends JavaPlugin {
             getLogger().info(HexColor.colorize("&cPlaceholderAPI не найден, плейсхолдеры не будут зарегистрированы"));
         }
 
-        if (Bukkit.getPluginManager().getPlugin("AuthMe") != null) {
+        if (Bukkit.getPluginManager().getPlugin("AuthMe") != null) { // authme
             getServer().getPluginManager().registerEvents(new AuthMeListener(this), this);
             getLogger().info(HexColor.colorize("&aAuthMe найден"));
         } else {

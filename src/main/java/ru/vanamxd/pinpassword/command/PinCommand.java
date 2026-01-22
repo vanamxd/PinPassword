@@ -33,80 +33,79 @@ public class PinCommand implements CommandExecutor {
 
         String sub = args[0].toLowerCase();
 
-        if (sub.equals("create") || sub.equals("change")) {
-            if (!(sender instanceof Player)) {
+        switch (sub) {
+            case "create", "change" -> {
+                if (!(sender instanceof Player)) {
+                    return true;
+                }
+                GUIManager gui = plugin.getGuiManager();
+                switch (sub) {
+                    case "create" -> gui.openCreateMenu((Player) sender);
+                    case "change" -> gui.openChangeMenu((Player) sender);
+                }
                 return true;
             }
-            GUIManager gui = plugin.getGuiManager();
-            switch (sub) {
-                case "create" -> gui.openCreateMenu((Player) sender);
-                case "change" -> gui.openChangeMenu((Player) sender);
+            case "help" -> {
+                List<String> commands = plugin.getConfig().getStringList("pin.messages.pincommands");
+                for (String line : commands) {
+                    sender.sendMessage(HexColor.colorize(line));
+                }
+                return true;
             }
-            return true;
+            case "lock" -> {
+                if (!(sender instanceof Player)) {
+                    return true;
+                }
+                Player player = (Player) sender;
+                UUID uuid = player.getUniqueId();
+
+                if (!plugin.getGuiManager().isAuthenticated(uuid)) {
+                    return true;
+                }
+
+                if (!plugin.getPinManager().hasPin(uuid)) {
+                    player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopin")));
+                    return true;
+                }
+
+                plugin.getGuiManager().setAuthenticated(uuid, false);
+                plugin.getGuiManager().openEnterMenu(player);
+                player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.youblock")));
+                return true;
+            }
+            case "delete" -> {
+                if (args.length < 2) {
+                    sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.usedelete")));
+                    return true;
+                }
+                if (!(sender instanceof ConsoleCommandSender)) {
+                    sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.onlyconsole")));
+                    return true;
+                }
+                String targetName = args[1];
+                OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+                if (target == null) {
+                    sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.notplayer")));
+                    return true;
+                }
+
+                if (!plugin.getPinManager().hasPin(target.getUniqueId())) {
+                    sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopinconsole")));
+                    return true;
+                }
+
+                plugin.getPinManager().deletePin(target.getUniqueId());
+                String msg = plugin.getConfig().getString("pin.messages.pindeleted");
+                if (msg != null) {
+                    msg = HexColor.colorize(msg
+                            .replace("%player%", targetName));
+                }
+                sender.sendMessage(msg);
+
+                return true;
+            }
         }
 
-        if (sub.equals("help")) {
-            List<String> commands = plugin.getConfig().getStringList("pin.messages.pincommands");
-            for (String line : commands) {
-                sender.sendMessage(HexColor.colorize(line));
-            }
-                return true;
-        }
-
-        if (sub.equals("lock")) {
-            if (!(sender instanceof Player)) {
-                return true;
-            }
-            Player player = (Player) sender;
-            UUID uuid = player.getUniqueId();
-
-            if (!plugin.getGuiManager().isAuthenticated(uuid)) {
-                return true;
-            }
-
-            if (!plugin.getPinManager().hasPin(uuid)) {
-                player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopin")));
-                return true;
-            }
-
-            plugin.getGuiManager().setAuthenticated(uuid, false);
-            plugin.getGuiManager().openEnterMenu(player);
-            player.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.youblock")));
-            return true;
-        }
-
-
-        if (sub.equals("delete")) {
-            if (args.length < 2) {
-                sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.usedelete")));
-                return true;
-            }
-            if (!(sender instanceof ConsoleCommandSender)) {
-                sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.onlyconsole")));
-                return true;
-            }
-            String targetName = args[1];
-            OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-            if (target == null) {
-                sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.notplayer")));
-                return true;
-            }
-
-            if (!plugin.getPinManager().hasPin(target.getUniqueId())) {
-                sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.nopinconsole")));
-                return true;
-            }
-
-            plugin.getPinManager().deletePin(target.getUniqueId());
-            String msg = plugin.getConfig().getString("pin.messages.pindeleted");
-            if (msg != null) {
-                msg = HexColor.colorize(msg
-                        .replace("%player%", targetName));
-            }
-            sender.sendMessage(msg);
-
-            return true;
-        }
 
         sender.sendMessage(HexColor.colorize(plugin.getConfig().getString("pin.messages.notcommand")));
         return true;
