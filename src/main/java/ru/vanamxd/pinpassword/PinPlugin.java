@@ -45,7 +45,7 @@ public class PinPlugin extends JavaPlugin {
         checkplayers();
 
         getLogger().info(HexColor.colorize("&aВключен"));
-        getLogger().info(HexColor.colorize("&aЗагружено " + pinManager.number.size() + " пинов (датабаза: " + pinManager.storagetype + ")"));
+        getLogger().info(HexColor.colorize("&aЗагружено " + pinManager.number.size() + " пинов (датабаза: " + pinManager.storagetype + ")" ));
     }
 
     private void checkplayers() {

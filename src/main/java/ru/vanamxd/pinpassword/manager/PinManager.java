@@ -1,12 +1,8 @@
 package ru.vanamxd.pinpassword.manager;
 
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.*;
@@ -31,7 +27,7 @@ public class PinManager {
         loadPins();
     }
 
-    private void initsql() { 
+    private void initsql() {
         try {
             File dbFile = new File(plugin.getDataFolder(), plugin.getConfig().getString("storage.sqlite.file", "pins.db"));
             if (!dbFile.exists()) dbFile.createNewFile();

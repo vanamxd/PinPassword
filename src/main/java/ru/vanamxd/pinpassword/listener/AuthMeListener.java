@@ -21,6 +21,13 @@ public class AuthMeListener implements Listener {
         Player p = e.getPlayer();
         UUID uuid = p.getUniqueId();
 
+        if (p.hasPermission("pinpassword.required")) {
+            if (!plugin.getPinManager().hasPin(uuid)) {
+                plugin.getGuiManager().openCreateMenu(p);
+                return;
+            }
+        }
+
         if (!plugin.getPinManager().hasPin(uuid)) return;
         plugin.getGuiManager().attempts.put(uuid, plugin.getGuiManager().maxattempts);
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getGuiManager().openEnterMenu(p));
